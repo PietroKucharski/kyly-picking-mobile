@@ -1,19 +1,31 @@
 package com.kyly.picking.ui.components
 
-import androidx.compose.material3.AssistChip
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun AddressChip(address: String, onClick: () -> Unit = {}) {
-    AssistChip(
-        onClick = onClick,
-        label   = {
-            Text(
-                text  = address,
-                style = MaterialTheme.typography.labelLarge,
-            )
-        },
-    )
+fun AddressChip(
+    label:    String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape    = RoundedCornerShape(999.dp),
+        color    = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border   = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Text(
+            text     = label,
+            style    = MaterialTheme.typography.labelLarge,
+            color    = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
 }

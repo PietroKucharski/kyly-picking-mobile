@@ -2,7 +2,7 @@ package com.kyly.picking.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.kyly.picking.data.remote.dto.BipagemRequestDto
+import com.kyly.picking.data.remote.dto.PostBipagemRequest
 
 @Entity(tableName = "bipagens_pendentes")
 data class BipagemPendenteEntity(
@@ -15,7 +15,7 @@ data class BipagemPendenteEntity(
     val criadoEm:        Long = System.currentTimeMillis(),
 )
 
-fun BipagemPendenteEntity.toRequest() = BipagemRequestDto(
+fun BipagemPendenteEntity.toRequest() = PostBipagemRequest(
     itemCaixaId     = itemCaixaId,
     codigoSkuBipado = codigoSkuBipado,
     enderecoId      = enderecoId,

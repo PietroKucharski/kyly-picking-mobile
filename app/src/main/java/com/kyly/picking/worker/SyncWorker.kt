@@ -24,10 +24,8 @@ class SyncWorker @AssistedInject constructor(
 
         return try {
             for (bipagem in pendentes) {
-                val response = apiService.postBipagem(bipagem.toRequest())
-                if (response.isSuccessful) {
-                    bipagemDao.deletar(bipagem)
-                }
+                apiService.postBipagem(bipagem.toRequest())
+                bipagemDao.deletar(bipagem)
             }
             Result.success()
         } catch (e: Exception) {

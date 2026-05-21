@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-**Spec 04 concluída** — tela de Papeleta implementada com cache via `ColetaStateHolder`, lista ordenada de itens e navegação para Picking.
+**Spec 05 concluída** — tela de Picking implementada com loop de bipagem, modal de erro, feedback de hardware e navegação para Finalização/Endereços Alternativos.
 
 ## Current Goal
 
-Implementar spec `05` — tela de Picking (coleta item a item).
+Compilar e testar no dispositivo físico Datalogic Memor 11.
 
 ## Completed
 
@@ -94,13 +94,42 @@ Implementar spec `05` — tela de Picking (coleta item a item).
     separado para previews
   - 4 `@Preview` (Loading, Loaded, Error, AllDone)
 
+- **Tela de Picking (spec 05)**
+  - `data/remote/dto/BipagemDtos.kt` — `PostBipagemRequest`, `PostBipagemResponse`,
+    `ColetaDto`, `ItemAtualizadoDto`, `CaixaAtualizadaDto`
+  - `data/remote/ApiService.kt` — endpoint `POST api/mobile/bipagens` atualizado
+    para usar `PostBipagemRequest`/`PostBipagemResponse`; rota corrigida de `"bipagens"`
+    para `"api/mobile/bipagens"`
+  - `data/local/BipagemPendenteEntity.kt` — `toRequest()` atualizado para retornar
+    `PostBipagemRequest` (substituindo `BipagemRequestDto`)
+  - `worker/SyncWorker.kt` — removida verificação `isSuccessful` (agora exceções
+    propagam para `try/catch`); `BipagemRequestDto` substituído por `PostBipagemRequest`
+  - `data/repository/BipagemRepository.kt` — `BipagemResult` sealed class
+    (Success/ItemJaCompleto/HttpError/NetworkError) e `registrar()` com tratamento
+    de `HttpException` 422 → `ItemJaCompleto`, outros códigos → `HttpError`,
+    `IOException` → `NetworkError`
+  - `ui/picking/PickingViewModel.kt` — `PickingErrorTipo`, `PickingError`,
+    `PickingUiState` (com `pecasRestantes`, `progressoHeader`, `scannerBloqueado`),
+    `PickingEvent` (CaixaFinalizada/PickingParcial/NavigateToEnderecos),
+    `PickingViewModel` completo: `inicializar()`, `onBarcodeScan()`, `onConfirmarErroModal()`,
+    `onSemSaldo()`, `onEnderecosAlternativos()`, `registrarBipagem()`, `tratarSucesso()`,
+    `proximoItemPendente()`; `ColetaStateHolder` atualizado após cada bipagem bem-sucedida
+  - `ui/components/AddressChip.kt` — substituído stub por chip pill com `Surface`,
+    `BorderStroke` e parâmetro `label` (sem onClick)
+  - `ui/components/PickingErrorBottomSheet.kt` — bottom sheet de erro com overlay escuro,
+    ícone circular, título/mensagem e botão "CONFIRMAR"; aceita `PickingError`
+  - `ui/picking/PickingScreen.kt` — implementação completa: header caixa + progresso,
+    corpo com REF/descrição/endereço (`NumeralXl`)/chips/contador (`NumeralLarge`),
+    rodapé com botões "SEM SALDO" (`WarehouseOrange`) e "Endereços Alt.", loading overlay,
+    modal de erro via `PickingErrorBottomSheet`; `PickingScreenContent` separado para previews
+  - 3 `@Preview` (Active, Loading, ErrorModal)
+
 ## In Progress
 
 - Nenhum.
 
 ## Next Up
 
-- Implementar spec `05` — tela de Picking (coleta item a item)
 - Adicionar arquivos binários externos (ver Open Questions)
 - Abrir projeto no Android Studio e executar `./gradlew assembleDebug`
 
@@ -168,3 +197,9 @@ Implementar spec `05` — tela de Picking (coleta item a item).
   6 arquivos criados/modificados: `ColetaStateHolder`, `MenuViewModel` (injeção do holder),
   `PapeletaViewModel`, `StatusChip`, `ItemPapeletaCard`, `PapeletaScreen`.
   `WarningIndustrial`/`SuccessIndustrial` de `Color.kt` usados no `StatusChip` em vez de hex hardcoded.
+- 2026-05-21: Tela de Picking implementada a partir da spec `05-picking-screen-spec.md`.
+  10 arquivos criados/modificados: `BipagemDtos.kt` (criado), `BipagemRepository.kt` (criado),
+  `PickingErrorBottomSheet.kt` (criado), `ApiService.kt`, `BipagemPendenteEntity.kt`,
+  `SyncWorker.kt`, `PickingViewModel.kt`, `PickingScreen.kt`, `AddressChip.kt` (substituído stub),
+  `BipagemRequestDto.kt` (esvaziado — substituído por `PostBipagemRequest` em `BipagemDtos.kt`).
+  Cores via `WarehouseOrange` de `Color.kt`; endereço via `NumeralXl`; contador via `NumeralLarge`.
