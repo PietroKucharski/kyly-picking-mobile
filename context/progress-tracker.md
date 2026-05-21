@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-**Spec 03 concluída** — tela de Menu implementada com bipagem de caixa e navegação para Papeleta.
+**Spec 04 concluída** — tela de Papeleta implementada com cache via `ColetaStateHolder`, lista ordenada de itens e navegação para Picking.
 
 ## Current Goal
 
-Implementar spec `04` — tela de Papeleta.
+Implementar spec `05` — tela de Picking (coleta item a item).
 
 ## Completed
 
@@ -74,13 +74,33 @@ Implementar spec `04` — tela de Papeleta.
   - `ui/papeleta/PapeletaScreen.kt` — placeholder atualizado para aceitar `caixaCodigo: String`
   - 3 `@Preview` (idle, loading, erro)
 
+- **Tela de Papeleta (spec 04)**
+  - `data/repository/ColetaStateHolder.kt` — singleton Hilt com `MutableStateFlow<CaixaDto?>`,
+    métodos `set()`, `get()`, `clear()`; evita re-fetch na transição Menu → Papeleta
+  - `ui/menu/MenuViewModel.kt` — injeção de `ColetaStateHolder`; `set(result.caixa)` chamado
+    antes de emitir `NavigateToPapeleta`
+  - `ui/papeleta/PapeletaViewModel.kt` — `PapeletaContent` (Loading/Loaded/Error),
+    `PapeletaUiState` com `canStartPicking`, `PapeletaEvent` (NavigateToPicking/NavigateBack);
+    `carregarCaixa()` usa cache do holder ou faz fallback via `ColetaRepository`;
+    `onIniciarPicking()` e `onVoltar()` emitem eventos únicos via `SharedFlow`
+  - `ui/components/StatusChip.kt` — chip de status com 4 variantes (pendente/parcial/completo/falta);
+    usa `WarningIndustrial` e `SuccessIndustrial` de `Color.kt` com alpha 0.15
+  - `ui/components/ItemPapeletaCard.kt` — card com `StatusChip`, código SKU, descrição,
+    endereço em fonte `JetBrainsMono`, quantidade coletada/esperada
+  - `ui/papeleta/PapeletaScreen.kt` — implementação completa: header com número do pedido,
+    sub-header com código da caixa e progresso, `LazyColumn` com itens ordenados
+    (pendente → parcial → falta → completo), botão "INICIAR PICKING" habilitado/desabilitado
+    conforme `canStartPicking`, estados Loading/Error/Loaded; `PapeletaScreenContent`
+    separado para previews
+  - 4 `@Preview` (Loading, Loaded, Error, AllDone)
+
 ## In Progress
 
 - Nenhum.
 
 ## Next Up
 
-- Implementar spec `04` — tela de Papeleta
+- Implementar spec `05` — tela de Picking (coleta item a item)
 - Adicionar arquivos binários externos (ver Open Questions)
 - Abrir projeto no Android Studio e executar `./gradlew assembleDebug`
 
@@ -125,6 +145,13 @@ Implementar spec `04` — tela de Papeleta.
   de navegação; `withArgs()` constrói a rota com o código real.
 - `MenuScreenContent` separado de `MenuScreen` (igual ao padrão `LoginContent/LoginScreen`)
   para viabilizar `@Preview` sem Hilt.
+- `ColetaStateHolder` é o único ponto de passagem de `CaixaDto` entre Menu e Papeleta —
+  evita serialização do DTO como argumento de navegação (violaria a regra "passe só IDs").
+- `PapeletaViewModel` lê `caixaCodigo` de `SavedStateHandle` — garante sobrevivência
+  ao process death sem precisar re-navegar.
+- `StatusChip` é o único arquivo com cores alpha calculadas em runtime; fora dele,
+  todas as cores vêm de `MaterialTheme.colorScheme` ou constantes de `Color.kt`.
+- `PapeletaScreenContent` separado de `PapeletaScreen` para viabilizar `@Preview` sem Hilt.
 
 ## Session Notes
 
@@ -137,3 +164,7 @@ Implementar spec `04` — tela de Papeleta.
 - 2026-05-21: Tela de Menu implementada a partir da spec `03-menu-screen-spec.md`.
   `ScanDisplayField` reutilizado com assinatura existente (`value`, `placeholder`, `isActive`).
   `AuthInterceptor` recebeu `@Singleton` que estava faltando.
+- 2026-05-21: Tela de Papeleta implementada a partir da spec `04-papeleta-screen-spec.md`.
+  6 arquivos criados/modificados: `ColetaStateHolder`, `MenuViewModel` (injeção do holder),
+  `PapeletaViewModel`, `StatusChip`, `ItemPapeletaCard`, `PapeletaScreen`.
+  `WarningIndustrial`/`SuccessIndustrial` de `Color.kt` usados no `StatusChip` em vez de hex hardcoded.
