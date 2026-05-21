@@ -2,12 +2,11 @@
 
 ## Current Phase
 
-**Setup Inicial concluído** — estrutura do projeto Android criada, pronta para
-abertura no Android Studio e compilação após adicionar arquivos binários externos.
+**Spec 02 concluída** — tela de Login implementada com autenticação JWT via scanner.
 
 ## Current Goal
 
-Implementar spec `02` — tela de Login.
+Implementar spec `03` — tela de Menu (seleção de papeleta).
 
 ## Completed
 
@@ -41,13 +40,29 @@ Implementar spec `02` — tela de Login.
   - ViewModels: LoginViewModel, MenuViewModel, PapeletaViewModel,
     PickingViewModel (com onResume/onPause), EnderecosViewModel
 
+- **Tela de Login (spec 02)**
+  - `domain/model/Result.kt` — sealed class `Result<T>` (Success/Error) compartilhada
+  - `data/remote/dto/AuthDtos.kt` — `MobileLoginRequest` e `MobileLoginResponse`
+  - `data/remote/ApiService.kt` — endpoint `POST api/auth/mobile-login`
+  - `data/repository/AuthRepository.kt` — método `login()` com chamada à API e salvamento de JWT;
+    tratamento de `IOException` (sem rede) e `HttpException` (401/422/etc)
+  - `ui/login/LoginViewModel.kt` — `LoginUiState`, `LoginEvent.Sucesso`, `LoginViewModel`
+    com scanner lifecycle (`onResume`/`onPause`) e fluxo de bipagem sequencial
+    (1º scan → supervisorCodigo, 2º scan → operadorCracha)
+  - `ui/components/ScanDisplayField.kt` — componente reutilizável de exibição de barcode;
+    borda azul quando ativo, borda navy quando preenchido, placeholder quando vazio
+  - `ui/login/LoginScreen.kt` — tela completa: header navy, 2 campos scan com estado visual,
+    botão "Entrar" habilitado apenas quando ambos campos preenchidos, loading spinner,
+    mensagem de erro inline; extrai `LoginContent` para previews
+  - 3 `@Preview` (vazio, preenchido, erro)
+
 ## In Progress
 
 - Nenhum.
 
 ## Next Up
 
-- Implementar spec `02` — tela de Login (autenticação JWT)
+- Implementar spec `03` — tela de Menu (seleção de papeleta)
 - Adicionar arquivos binários externos (ver Open Questions)
 - Abrir projeto no Android Studio e executar `./gradlew assembleDebug`
 
@@ -75,9 +90,23 @@ Implementar spec `02` — tela de Login.
 - `BuildConfig.API_BASE_URL` é a única fonte de URL da API — sem hardcode.
 - Offline: bipagens falhas vão para Room; `SyncWorker` re-envia quando há rede.
 
+## Architecture Decisions
+
+- `Result<T>` sealed class definida em `domain/model/Result.kt` — usada por todos
+  os repositórios para retornar sucesso/erro tipado sem lançar exceções no ViewModel.
+- `AuthRepository` agora depende de `ApiService` além de `SecureStorage` — sem
+  circular dependency pois `ApiService` não depende de `AuthRepository`.
+- `LoginViewModel` habilita/desabilita scanner via `onResume`/`onPause` igual às
+  telas de bipagem — login também usa scanner para capturar credenciais.
+- Fluxo de bipagem sequencial: 1º barcode → `supervisorCodigo`, 2º → `operadorCracha`;
+  barcodes extras ignorados enquanto ambos estiverem preenchidos.
+- `LoginContent` separado de `LoginScreen` para viabilizar `@Preview` sem Hilt.
+
 ## Session Notes
 
 - 2026-05-21: Setup inicial implementado a partir da spec `01-mobile-setup-spec.md`.
   Projeto criado manualmente (sem Android Studio) — todos os arquivos Kotlin e Gradle
   gerados diretamente. Arquivos binários (fontes .ttf, .aar, gradle-wrapper.jar)
   precisam ser adicionados manualmente antes de compilar.
+- 2026-05-21: Tela de Login implementada a partir dos context files (spec `02` estava
+  vazia). Implementação seguiu ui-context.md, architecture.md e code-standards.md.
