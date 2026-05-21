@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kyly.picking.data.local.SecureStorage
 import com.kyly.picking.data.repository.CaixaResult
 import com.kyly.picking.data.repository.ColetaRepository
+import com.kyly.picking.data.repository.ColetaStateHolder
 import com.kyly.picking.hardware.DatalogicManager
 import com.kyly.picking.hardware.FeedbackEvent
 import com.kyly.picking.hardware.FeedbackManager
@@ -33,10 +34,11 @@ sealed class MenuEvent {
 
 @HiltViewModel
 class MenuViewModel @Inject constructor(
-    private val coletaRepository: ColetaRepository,
-    private val secureStorage:    SecureStorage,
-    private val datalogic:        DatalogicManager,
-    private val feedback:         FeedbackManager,
+    private val coletaRepository:   ColetaRepository,
+    private val coletaStateHolder:  ColetaStateHolder,
+    private val secureStorage:      SecureStorage,
+    private val datalogic:          DatalogicManager,
+    private val feedback:           FeedbackManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MenuUiState())
@@ -66,6 +68,7 @@ class MenuViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = coletaRepository.buscarCaixa(codigo)) {
                 is CaixaResult.Success -> {
+                    coletaStateHolder.set(result.caixa)
                     _events.emit(MenuEvent.NavigateToPapeleta(result.caixa.codigo))
                 }
                 is CaixaResult.NotFound -> {
