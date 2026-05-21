@@ -16,7 +16,9 @@ import com.kyly.picking.ui.picking.PickingScreen
 sealed class AppDestination(val route: String) {
     object Login       : AppDestination("login")
     object Menu        : AppDestination("menu")
-    object Papeleta    : AppDestination("papeleta")
+    object Papeleta    : AppDestination("papeleta/{caixaCodigo}") {
+        fun withArgs(caixaCodigo: String) = "papeleta/$caixaCodigo"
+    }
     object Picking     : AppDestination("picking/{caixaCodigo}") {
         fun withArgs(codigo: String) = "picking/$codigo"
     }
@@ -40,8 +42,14 @@ fun AppNavGraph(navController: NavHostController) {
         composable(AppDestination.Menu.route) {
             MenuScreen(navController)
         }
-        composable(AppDestination.Papeleta.route) {
-            PapeletaScreen(navController)
+        composable(
+            route     = AppDestination.Papeleta.route,
+            arguments = listOf(navArgument("caixaCodigo") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            PapeletaScreen(
+                navController = navController,
+                caixaCodigo   = backStackEntry.arguments?.getString("caixaCodigo") ?: "",
+            )
         }
         composable(
             route     = AppDestination.Picking.route,

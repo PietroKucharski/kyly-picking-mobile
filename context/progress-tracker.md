@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-**Spec 02 concluída** — tela de Login implementada com autenticação JWT via scanner.
+**Spec 03 concluída** — tela de Menu implementada com bipagem de caixa e navegação para Papeleta.
 
 ## Current Goal
 
-Implementar spec `03` — tela de Menu (seleção de papeleta).
+Implementar spec `04` — tela de Papeleta.
 
 ## Completed
 
@@ -56,13 +56,31 @@ Implementar spec `03` — tela de Menu (seleção de papeleta).
     mensagem de erro inline; extrai `LoginContent` para previews
   - 3 `@Preview` (vazio, preenchido, erro)
 
+- **Tela de Menu (spec 03)**
+  - `data/remote/dto/CaixaDtos.kt` — DTOs `GetCaixaResponse`, `CaixaDto`, `PedidoDto`,
+    `ItemCaixaDto`, `SkuDto`, `EnderecoDto` com `@JsonClass(generateAdapter = true)`
+  - `data/remote/ApiService.kt` — endpoint `GET api/mobile/caixas/{codigo}`
+  - `data/remote/AuthInterceptor.kt` — anotação `@Singleton` adicionada
+  - `data/repository/ColetaRepository.kt` — implementação completa com `CaixaResult`
+    sealed class (Success, NotFound, AlreadyFinalized, HttpError, NetworkError)
+    e método `buscarCaixa(codigo)`
+  - `ui/navigation/AppNavGraph.kt` — `AppDestination.Papeleta` atualizado para
+    `"papeleta/{caixaCodigo}"` com `withArgs()`; composable registrado com argumento
+  - `ui/menu/MenuViewModel.kt` — `MenuUiState`, `MenuEvent`, `MenuViewModel` com
+    lifecycle do scanner, `onBarcodeScan`, `buscarCaixa`, `onRetry`, `onLogout`
+  - `ui/menu/MenuScreen.kt` — tela completa: header navy, ícone scanner, instrução,
+    `ScanDisplayField`, loading spinner, mensagem de erro + "Tentar novamente",
+    botão SAIR outlined; `MenuScreenContent` separado para previews
+  - `ui/papeleta/PapeletaScreen.kt` — placeholder atualizado para aceitar `caixaCodigo: String`
+  - 3 `@Preview` (idle, loading, erro)
+
 ## In Progress
 
 - Nenhum.
 
 ## Next Up
 
-- Implementar spec `03` — tela de Menu (seleção de papeleta)
+- Implementar spec `04` — tela de Papeleta
 - Adicionar arquivos binários externos (ver Open Questions)
 - Abrir projeto no Android Studio e executar `./gradlew assembleDebug`
 
@@ -101,6 +119,12 @@ Implementar spec `03` — tela de Menu (seleção de papeleta).
 - Fluxo de bipagem sequencial: 1º barcode → `supervisorCodigo`, 2º → `operadorCracha`;
   barcodes extras ignorados enquanto ambos estiverem preenchidos.
 - `LoginContent` separado de `LoginScreen` para viabilizar `@Preview` sem Hilt.
+- `CaixaResult` sealed class em `ColetaRepository.kt` — resultado tipado de `buscarCaixa`,
+  evita lançar exceções no ViewModel.
+- `AppDestination.Papeleta` alterado para `"papeleta/{caixaCodigo}"` — argumento obrigatório
+  de navegação; `withArgs()` constrói a rota com o código real.
+- `MenuScreenContent` separado de `MenuScreen` (igual ao padrão `LoginContent/LoginScreen`)
+  para viabilizar `@Preview` sem Hilt.
 
 ## Session Notes
 
@@ -110,3 +134,6 @@ Implementar spec `03` — tela de Menu (seleção de papeleta).
   precisam ser adicionados manualmente antes de compilar.
 - 2026-05-21: Tela de Login implementada a partir dos context files (spec `02` estava
   vazia). Implementação seguiu ui-context.md, architecture.md e code-standards.md.
+- 2026-05-21: Tela de Menu implementada a partir da spec `03-menu-screen-spec.md`.
+  `ScanDisplayField` reutilizado com assinatura existente (`value`, `placeholder`, `isActive`).
+  `AuthInterceptor` recebeu `@Singleton` que estava faltando.
